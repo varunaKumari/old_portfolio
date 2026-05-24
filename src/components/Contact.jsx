@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import emailjs from '@emailjs/browser'
 import { Toaster, toast } from 'react-hot-toast'
@@ -9,14 +9,60 @@ import {
   Github,
   Linkedin,
   Twitter,
-  Globe
+  Globe,
+  Loader2,
 } from 'lucide-react'
 
+/* ── animation helpers ── */
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12 },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+}
+
+/* ── sub-components ── */
+const InfoItem = ({ icon, title, text }) => (
+  <motion.div
+    variants={itemVariants}
+    className="glass-card glow-border rounded-xl p-4 flex gap-4 items-center transition-transform duration-300 hover:-translate-y-1"
+  >
+    <div className="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple shrink-0">
+      {icon}
+    </div>
+    <div>
+      <h4 className="font-semibold text-white text-sm">{title}</h4>
+      <p className="text-gray-400 text-sm">{text}</p>
+    </div>
+  </motion.div>
+)
+
+const SocialIcon = ({ icon, link }) => (
+  <motion.a
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.95 }}
+    className="w-12 h-12 rounded-xl glass-card flex items-center justify-center text-gray-400 hover:bg-purple/20 hover:text-purple transition-all duration-300"
+  >
+    {icon}
+  </motion.a>
+)
+
+/* ── main component ── */
 const Contact = () => {
   const formRef = useRef()
+  const [sending, setSending] = useState(false)
 
   const sendEmail = (e) => {
     e.preventDefault()
+    setSending(true)
 
     emailjs
       .sendForm(
@@ -29,165 +75,172 @@ const Contact = () => {
         () => {
           toast.success('Message sent successfully!')
           formRef.current.reset()
+          setSending(false)
         },
         (error) => {
           console.error(error)
           toast.error('Failed to send message')
+          setSending(false)
         }
       )
   }
 
-  const inputFocus =
-    'focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all duration-300'
+  const inputClasses =
+    'w-full glass-card border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder-gray-500 hover:border-white/20 focus:border-purple focus:ring-2 focus:ring-purple/20 focus:bg-dark-200/50 transition-all duration-300 outline-none'
 
   return (
     <>
       <Toaster position="top-right" />
 
-      <motion.section
-        id="contact"
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        viewport={{ once: true }}
-        className="py-24 bg-dark-200"
-      >
+      <section id="contact" className="py-24 bg-dark-200">
         <div className="container mx-auto px-6">
 
-          {/* Heading */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold">
-              Get In <span className="text-purple-500">Touch</span>
+          {/* ── Heading ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white">
+              Get In <span className="gradient-text">Touch</span>
             </h2>
-            <p className="text-gray-400 mt-3">
-              Have a project in mind or want to collaborate? Let’s talk!
+            <div className="w-20 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-purple to-pink" />
+            <p className="text-gray-400 mt-4 text-lg max-w-xl mx-auto">
+              Have a project in mind or want to collaborate? Let's talk!
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
+          {/* ── Grid ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
 
-            {/* LEFT – FORM */}
-            <form ref={formRef} onSubmit={sendEmail} className="space-y-6">
-              <div>
-                <label className="block mb-2 text-sm text-gray-300">
+            {/* LEFT – Form */}
+            <motion.form
+              ref={formRef}
+              onSubmit={sendEmail}
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="space-y-6"
+            >
+              {/* Name */}
+              <motion.div variants={itemVariants}>
+                <label className="text-sm font-medium text-gray-400 mb-2 block">
                   Your Name
                 </label>
                 <input
                   type="text"
                   name="user_name"
                   required
-                  className={`w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-3 ${inputFocus}`}
+                  placeholder="John Doe"
+                  className={inputClasses}
                 />
-              </div>
+              </motion.div>
 
-              <div>
-                <label className="block mb-2 text-sm text-gray-300">
+              {/* Email */}
+              <motion.div variants={itemVariants}>
+                <label className="text-sm font-medium text-gray-400 mb-2 block">
                   Email Address
                 </label>
                 <input
                   type="email"
                   name="user_email"
                   required
-                  className={`w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-3 ${inputFocus}`}
+                  placeholder="john@example.com"
+                  className={inputClasses}
                 />
-              </div>
+              </motion.div>
 
-              <div>
-                <label className="block mb-2 text-sm text-gray-300">
+              {/* Message */}
+              <motion.div variants={itemVariants}>
+                <label className="text-sm font-medium text-gray-400 mb-2 block">
                   Your Message
                 </label>
                 <textarea
-                  rows="6"
+                  rows={5}
                   name="message"
                   required
-                  className={`w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-3 resize-none ${inputFocus}`}
+                  placeholder="Tell me about your project…"
+                  className={`${inputClasses} resize-none`}
                 />
-              </div>
+              </motion.div>
 
-              <button
-                type="submit"
-                className="w-full py-4 bg-purple-600 rounded-xl font-semibold
-                           hover:bg-purple-700 transition-all duration-300"
-              >
-                Send Message
-              </button>
-            </form>
+              {/* Submit */}
+              <motion.div variants={itemVariants}>
+                <motion.button
+                  type="submit"
+                  disabled={sending}
+                  whileHover={sending ? {} : { scale: 1.02 }}
+                  whileTap={sending ? {} : { scale: 0.98 }}
+                  className="w-full py-4 bg-gradient-to-r from-purple to-pink rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple/25 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {sending ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    'Send Message →'
+                  )}
+                </motion.button>
+              </motion.div>
+            </motion.form>
 
-            {/* RIGHT – INFO */}
-            <div className="space-y-10">
-
+            {/* RIGHT – Info */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="space-y-5 flex flex-col justify-center"
+            >
               <InfoItem
-                icon={<MapPin size={22} />}
+                icon={<MapPin size={20} />}
                 title="Location"
                 text="Raichur, Karnataka"
               />
-
               <InfoItem
-                icon={<Mail size={22} />}
+                icon={<Mail size={20} />}
                 title="Email"
                 text="varunakumari2102@gmail.com"
               />
-
               <InfoItem
-                icon={<Phone size={22} />}
+                icon={<Phone size={20} />}
                 title="Phone"
                 text="+91 7903498540"
               />
 
               {/* Socials */}
-              <div>
-                <h4 className="font-semibold text-white mb-4">
-                  Follow Me
-                </h4>
+              <motion.div variants={itemVariants} className="pt-4">
+                <h4 className="font-semibold text-white mb-4">Follow Me</h4>
                 <div className="flex gap-4">
                   <SocialIcon
-                    icon={<Github />}
+                    icon={<Github size={20} />}
                     link="https://github.com/varunaKumari"
                   />
                   <SocialIcon
-                    icon={<Linkedin />}
+                    icon={<Linkedin size={20} />}
                     link="https://www.linkedin.com/in/varunakumari?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
                   />
                   <SocialIcon
-                    icon={<Twitter />}
+                    icon={<Twitter size={20} />}
                     link="#"
                   />
                   <SocialIcon
-                    icon={<Globe />}
+                    icon={<Globe size={20} />}
                     link="#"
                   />
                 </div>
-              </div>
+              </motion.div>
+            </motion.div>
 
-            </div>
           </div>
-
         </div>
-      </motion.section>
+      </section>
     </>
   )
 }
-
-const InfoItem = ({ icon, title, text }) => (
-  <div className="flex gap-4 items-start">
-    <div className="text-purple-500">{icon}</div>
-    <div>
-      <h4 className="font-semibold text-white">{title}</h4>
-      <p className="text-gray-400">{text}</p>
-    </div>
-  </div>
-)
-
-const SocialIcon = ({ icon, link }) => (
-  <a
-    href={link}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="w-12 h-12 rounded-full bg-dark-300 flex items-center justify-center
-               hover:bg-purple-500/20 transition"
-  >
-    {icon}
-  </a>
-)
 
 export default Contact
